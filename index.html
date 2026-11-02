@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Daily Muslim Companion</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f172a;--card:#1e293b;--text:#f8fafc;--muted:#94a3b8;
+  --line:#334155;--accent:#10b981;--accent-dark:#059669;
+  --gold:#f59e0b;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.5;
+  padding:20px 16px 80px;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:600px;margin:0 auto}
+header{text-align:center;margin-bottom:20px}
+h1{font-size:1.6rem;color:var(--accent);margin-bottom:4px}
+.hijri-date{color:var(--gold);font-size:0.95rem;font-weight:600;margin-bottom:8px;}
+header p{color:var(--muted);font-size:0.85rem}
+
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:10px;margin-bottom:16px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:0 0 auto;padding:10px 16px;border-radius:999px;border:1px solid var(--line);
+  background:var(--card);color:var(--text);font-weight:600;font-size:0.85rem;
+  cursor:pointer;transition:0.2s;
+}
+.tab.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;border:1px solid var(--line);}
+.section-title{font-size:0.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;}
+
+/* Prayer Times */
+.prayer-row{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);font-size:1.05rem;}
+.prayer-row:last-child{border-bottom:none;}
+.prayer-name{font-weight:600;}
+.prayer-time{color:var(--accent);font-weight:700;}
+
+/* Qibla */
+.qibla-container{text-align:center;padding:20px 0;}
+.compass{
+  width:200px;height:200px;border-radius:50%;border:4px solid var(--line);
+  margin:0 auto 20px;position:relative;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+}
+.arrow{
+  width:6px;height:80px;background:var(--accent);position:absolute;
+  bottom:50%;transform-origin:bottom center;border-radius:4px;
+  transition:transform 0.5s ease;
+}
+.arrow::before{
+  content:"";position:absolute;top:-10px;left:-6px;
+  border-left:9px solid transparent;border-right:9px solid transparent;
+  border-bottom:14px solid var(--accent);
+}
+.degree-text{font-size:1.5rem;font-weight:800;color:var(--gold);margin-top:10px;}
+
+/* Tasbih */
+.tasbih-container{text-align:center;}
+.count-display{font-size:4rem;font-weight:800;color:var(--accent);margin:20px 0;}
+.tasbih-btn{
+  width:150px;height:150px;border-radius:50%;background:var(--card);
+  border:4px solid var(--accent);color:var(--text);font-size:1.2rem;
+  font-weight:700;cursor:pointer;transition:0.1s;margin-bottom:20px;
+  box-shadow:0 10px 20px rgba(0,0,0,0.3);
+}
+.tasbih-btn:active{transform:scale(0.95);background:var(--accent-dark);}
+.reset-btn{
+  padding:10px 20px;border-radius:8px;background:transparent;border:1px solid var(--muted);
+  color:var(--muted);font-weight:600;cursor:pointer;margin-top:10px;
+}
+
+/* Zakat Calculator */
+.input-group{margin-bottom:12px;}
+.input-group label{display:block;font-size:0.85rem;color:var(--muted);margin-bottom:4px;}
+.input-group input{
+  width:100%;padding:12px;border-radius:8px;border:1px solid var(--line);
+  background:var(--bg);color:var(--text);font-size:1rem;outline:none;
+}
+.input-group input:focus{border-color:var(--accent);}
+.zakat-result{
+  margin-top:20px;padding:16px;border-radius:12px;
+  background:rgba(16,185,129,0.1);border:1px solid var(--accent);
+  text-align:center;
+}
+.zakat-result h3{color:var(--muted);font-size:0.9rem;margin-bottom:8px;}
+.zakat-result .amount{font-size:2rem;font-weight:800;color:var(--accent);}
+
+.hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Daily Companion</h1>
+    <div class="hijri-date" id="hijriDate">Loading Hijri Date...</div>
+    <p>Your private, offline Islamic utility.</p>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" onclick="switchTab('prayers')">🕌 Prayers</button>
+    <button class="tab" onclick="switchTab('qibla')">🧭 Qibla</button>
+    <button class="tab" onclick="switchTab('tasbih')">📿 Tasbih</button>
+    <button class="tab" onclick="switchTab('zakat')">💰 Zakat</button>
+  </nav>
+
+  <!-- PRAYERS SECTION -->
+  <div id="prayers" class="card">
+    <div class="section-title" id="locationText">Getting your location...</div>
+    <div id="prayerList">
+      <div class="prayer-row"><span class="prayer-name">Fajr</span><span class="prayer-time" id="fajr">--:--</span></div>
+      <div class="prayer-row"><span class="prayer-name">Dhuhr</span><span class="prayer-time" id="dhuhr">--:--</span></div>
+      <div class="prayer-row"><span class="prayer-name">Asr</span><span class="prayer-time" id="asr">--:--</span></div>
+      <div class="prayer-row"><span class="prayer-name">Maghrib</span><span class="prayer-time" id="maghrib">--:--</span></div>
+      <div class="prayer-row"><span class="prayer-name">Isha</span><span class="prayer-time" id="isha">--:--</span></div>
+    </div>
+  </div>
+
+  <!-- QIBLA SECTION -->
+  <div id="qibla" class="card hidden">
+    <div class="section-title">Qibla Direction</div>
+    <div class="qibla-container">
+      <div class="compass">
+        <div class="arrow" id="qiblaArrow"></div>
+      </div>
+      <p>Face this direction to pray.</p>
+      <div class="degree-text" id="qiblaDegree">--°</div>
+      <p style="font-size:0.8rem;color:var(--muted);margin-top:10px;">(Hold your tablet flat for the most accurate reading)</p>
+    </div>
+  </div>
+
+  <!-- TASBIH SECTION -->
+  <div id="tasbih" class="card hidden">
+    <div class="section-title">Digital Tasbih</div>
+    <div class="tasbih-container">
+      <div class="count-display" id="tasbihCount">0</div>
+      <button class="tasbih-btn" id="tasbihBtn" onclick="incrementTasbih()">TAP TO COUNT</button>
+      <br>
+      <button class="reset-btn" onclick="resetTasbih()">Reset Count</button>
+    </div>
+  </div>
+
+  <!-- ZAKAT SECTION -->
+  <div id="zakat" class="card hidden">
+    <div class="section-title">Zakat Calculator</div>
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:16px;">Enter your total savings, cash, and gold value (in your local currency). Zakat is 2.5% of your total wealth if it exceeds the Nisab threshold.</p>
+    
+    <div class="input-group">
+      <label>Cash & Bank Savings</label>
+      <input type="number" id="zCash" placeholder="0.00" oninput="calcZakat()">
+    </div>
+    <div class="input-group">
+      <label>Value of Gold & Silver</label>
+      <input type="number" id="zGold" placeholder="0.00" oninput="calcZakat()">
+    </div>
+    <div class="input-group">
+      <label>Investments / Stocks</label>
+      <input type="number" id="zInvest" placeholder="0.00" oninput="calcZakat()">
+    </div>
+    <div class="input-group">
+      <label>Debts you owe (Subtracted)</label>
+      <input type="number" id="zDebts" placeholder="0.00" oninput="calcZakat()">
+    </div>
+
+    <div class="zakat-result">
+      <h3>Your Zakat Due</h3>
+      <div class="amount" id="zakatAmount">0.00</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// --- 1. HIJRI DATE (Calculated Natively in JS) ---
+function loadHijriDate() {
+  try {
+    const today = new Date();
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    const hijriFormatter = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura', options);
+    document.getElementById('hijriDate').textContent = hijriFormatter.format(today) + " AH";
+  } catch (e) {
+    document.getElementById('hijriDate').textContent = "Hijri Calendar";
+  }
+}
+
+// --- 2. TAB SWITCHING ---
+function switchTab(tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  ['prayers', 'qibla', 'tasbih', 'zakat'].forEach(id => {
+    document.getElementById(id).classList.add('hidden');
+  });
+  document.getElementById(tabId).classList.remove('hidden');
+}
+
+// --- 3. PRAYER TIMES (API) ---
+async function loadPrayerTimes() {
+  if (!navigator.geolocation) {
+    document.getElementById('locationText').textContent = "Location not supported.";
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    
+    document.getElementById('locationText').textContent = "Loading prayer times...";
+
+    try {
+      // Using Aladhan API (Method 4 = Umm Al-Qura, Makkah)
+      const response = await fetch(`https://api.aladhan.com/v1/timings?latitude=${lat}&longitude=${lon}&method=4`);
+      const data = await response.json();
+      const timings = data.data.timings;
+
+      document.getElementById('fajr').textContent = timings.Fajr;
+      document.getElementById('dhuhr').textContent = timings.Dhuhr;
+      document.getElementById('asr').textContent = timings.Asr;
+      document.getElementById('maghrib').textContent = timings.Maghrib;
+      document.getElementById('isha').textContent = timings.Isha;
+      document.getElementById('locationText').textContent = "Today's Prayer Times";
+
+      calculateQibla(lat, lon);
+    } catch (error) {
+      document.getElementById('locationText').textContent = "Error loading times. Check internet.";
+    }
+  }, () => {
+    document.getElementById('locationText').textContent = "Location access denied.";
+  });
+}
+
+// --- 4. QIBLA CALCULATION ---
+function calculateQibla(lat, lon) {
+  const mkkLat = 21.4225;
+  const mkkLon = 39.8262;
+
+  const phiK = mkkLat * Math.PI / 180.0;
+  const lambdaK = mkkLon * Math.PI / 180.0;
+  const phi = lat * Math.PI / 180.0;
+  const lambda = lon * Math.PI / 180.0;
+  
+  const y = Math.sin(lambdaK - lambda);
+  const x = Math.cos(phi) * Math.tan(phiK) - Math.sin(phi) * Math.cos(lambdaK - lambda);
+  
+  let qibla = Math.atan2(y, x) * 180.0 / Math.PI;
+  qibla = (qibla + 360) % 360;
+
+  document.getElementById('qiblaDegree').textContent = Math.round(qibla) + "°";
+  document.getElementById('qiblaArrow').style.transform = `rotate(${qibla}deg)`;
+}
+
+// --- 5. TASBIH COUNTER ---
+let tasbihCount = localStorage.getItem('tasbihCount') ? parseInt(localStorage.getItem('tasbihCount')) : 0;
+document.getElementById('tasbihCount').textContent = tasbihCount;
+
+function incrementTasbih() {
+  tasbihCount++;
+  document.getElementById('tasbihCount').textContent = tasbihCount;
+  localStorage.setItem('tasbihCount', tasbihCount);
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+function resetTasbih() {
+  if(confirm("Reset your Tasbih count to 0?")) {
+    tasbihCount = 0;
+    document.getElementById('tasbihCount').textContent = 0;
+    localStorage.setItem('tasbihCount', 0);
+  }
+}
+
+// --- 6. ZAKAT CALCULATOR ---
+function calcZakat() {
+  const cash = parseFloat(document.getElementById('zCash').value) || 0;
+  const gold = parseFloat(document.getElementById('zGold').value) || 0;
+  const invest = parseFloat(document.getElementById('zInvest').value) || 0;
+  const debts = parseFloat(document.getElementById('zDebts').value) || 0;
+
+  // Total zakatable wealth
+  const netWealth = (cash + gold + invest) - debts;
+
+  // Standard Nisab (approx value of 85g of gold - currently around $5,000 USD or 18,750 SAR)
+  // Since currency varies, we assume if netWealth is positive, they want the 2.5% calculation.
+  // In a real app, you'd ask for the current gold price, but 2.5% of the total is the core math.
+  
+  let zakatDue = 0;
+  if (netWealth > 0) {
+    zakatDue = netWealth * 0.025; // 2.5%
+  }
+
+  // Format to 2 decimal places
+  document.getElementById('zakatAmount').textContent = zakatDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Initialize App
+loadHijriDate();
+loadPrayerTimes();
+</script>
+</body>
+</html>

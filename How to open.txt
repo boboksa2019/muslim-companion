@@ -1,0 +1,12 @@
+HOW TO USE YOUR DAILY MUSLIM COMPANION:
+
+OPTION 1: Install it like a real app (Recommended)
+1. Open your web browser (Chrome or Safari).
+2. Go to this link: [PASTE YOUR NETLIFY LINK HERE]
+3. Tap the 3 dots (or Share button on iPhone) and select "Add to Home Screen".
+4. Open the app and tap "Allow" when it asks for your location (this is needed for Prayer Times and Qibla).
+
+OPTION 2: Use the downloaded file
+1. Unzip the downloaded file.
+2. Tap "index.html" and choose "Open with Chrome/Safari".
+(Note: GPS might be blocked if you open it this way, so Option 1 is best).
